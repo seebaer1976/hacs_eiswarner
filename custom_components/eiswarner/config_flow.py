@@ -5,6 +5,8 @@ from homeassistant import config_entries
 from const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
+
+
 class BeispielConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_user(self, user_input=None):
         if user_input is not None:
