@@ -1,0 +1,9 @@
+{
+    "domain": "eiswarner",
+    "name": "Eiswarner",
+    "codeowners": ["seebaer1976, gicko"],
+    "dependencies": [],
+    "documentation": "",
+    "iot_class": "cloud_polling",
+    "requirements": []
+}
