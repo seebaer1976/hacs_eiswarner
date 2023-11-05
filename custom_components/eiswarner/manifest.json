@@ -3,7 +3,7 @@
     "name": "Eiswarner",
     "codeowners": ["seebaer1976, gicko"],
     "dependencies": [],
-    "documentation": "https://github.com/seebaer1976/hassio-integrationen/blob/master/custom_components/eiswarner/README.md",
+    "documentation": "https://github.com/seebaer1976/hassio-integrationen/blob/master/README.md",
     "integration_type": "entity",
     "iot_class": "local_polling",
     "requirements": [],
