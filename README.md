@@ -1,1 +1,1 @@
-# HA-Integration
+# HA-Integrationen
