@@ -1,4 +1,7 @@
+import logging
 from homeassistant.helpers.entity import Entity
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class EiswarnerEntity(Entity):

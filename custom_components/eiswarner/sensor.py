@@ -1,10 +1,13 @@
 from datetime import timedelta
-
+import logging
 import requests
 from homeassistant.helpers.event import async_track_time_interval
 
 from const import DOMAIN
 from entity import EiswarnerEntity
+
+
+_LOGGER = logging.getLogger(__name__)
 
 
 async def update(hass, sensor):
