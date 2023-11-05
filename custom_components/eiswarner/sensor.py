@@ -6,8 +6,9 @@ from homeassistant.helpers.event import async_track_time_interval
 from const import DOMAIN
 from entity import EiswarnerEntity
 
-
 _LOGGER = logging.getLogger(__name__)
+
+VERSION = '0.0.1'
 
 
 async def update(hass, sensor):
