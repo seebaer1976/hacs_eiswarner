@@ -1,5 +1,5 @@
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+
 from config_flow import EiswarnerConfigFlow  # Korrigierter Import
 
 DOMAIN = "eiswarner"

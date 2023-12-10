@@ -1,14 +1,20 @@
 {
-    "domain": "eiswarner",
-    "name": "Eiswarner",
-    "codeowners": ["seebaer1976"],
-    "dependencies": [123445678],
-    "documentation": "https://github.com/seebaer1976/hacs_eiswarner/blob/master/README.md",
-    "integration_type": "entity",
-    "iot_class": "local_polling",
-    "requirements": [],
-    "issue_tracker": "https://github.com/seebaer1976/hacs_eiswarner/issues",
-    "loggers": ["eiswarner"],
-    "version": "0.0.2",
-    "config_flow": true
+  "domain": "eiswarner",
+  "name": "Eiswarner",
+  "codeowners": [
+    "seebaer1976"
+  ],
+  "dependencies": [
+    123445678
+  ],
+  "documentation": "https://github.com/seebaer1976/hacs_eiswarner/blob/master/README.md",
+  "integration_type": "entity",
+  "iot_class": "local_polling",
+  "requirements": [],
+  "issue_tracker": "https://github.com/seebaer1976/hacs_eiswarner/issues",
+  "loggers": [
+    "eiswarner"
+  ],
+  "version": "0.0.2",
+  "config_flow": true
 }
