@@ -3,7 +3,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 DOMAIN = "eiswarner"
-
+VERSION = '0.0.2'
 async def async_setup(hass, config):
     # Das grundlegende Setup hier durchführen, falls erforderlich
     return True
