@@ -1,4 +1,4 @@
-from . import eiswarner
+from eiswarner import EiswarnerSensor
 
 DOMAIN = "eiswarner"
 
