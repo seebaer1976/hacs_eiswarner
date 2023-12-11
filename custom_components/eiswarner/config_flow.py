@@ -1,64 +1,97 @@
-import logging
+from homeassistant.config_entries import ConfigFlow, ConfigEntry, SOURCE_USER
+from homeassistant.const import CONF_API_KEY, CONF_LONGITUDE, CONF_LATITUDE
 
-import voluptuous as vol
-from homeassistant import config_entries
-
-from const import DOMAIN
-
-_LOGGER = logging.getLogger(__name__)
+from . import DOMAIN
 
 
-class EiswarnerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    async def async_step_user(self, user_input=None):
-        if user_input is not None:
+class EiswarnerConfigFlow(ConfigFlow, domain=DOMAIN):
+    """Eiswarner Integration Konfiguration."""
 
-            # Überprüfen, ob der API-Schlüssel gültig ist
-            if not is_valid_api_key(user_input['api_key']):
-                return self.async_show_form(
-                    step_id="user",
-                    data_schema=self.schema,
-                    errors={"api_key": "Ungültiger API-Schlüssel"},
-                )
+    def __init__(self):
+        super().__init__()
+        self._is_valid_api_key = None
 
-            # Überprüfen, ob der Längengrad im gültigen Bereich liegt (-180 bis 180)
-            if user_input['longitude'] < -180 or user_input['longitude'] > 180:
-                return self.async_show_form(
-                    step_id="user",
-                    data_schema=self.schema,
-                    errors={"longitude": "Ungültiger Längengrad"},
-                )
+    async def async_step_user(self, user_input: dict):
+        """Schritt 1: Eingaben des Benutzers abfragen."""
 
-            # Überprüfen, ob der Breitengrad im gültigen Bereich liegt (-90 bis 90)
-            if user_input['latitude'] < -90 or user_input['latitude'] > 90:
-                return self.async_show_form(
-                    step_id="user",
-                    data_schema=self.schema,
-                    errors={"latitude": "Ungültiger Breitengrad"},
-                )
+        # Abrufen des API-Schlüssels
+        api_key = user_input.get(CONF_API_KEY)
 
-            # Wenn die Eingabe gültig ist, Konfigurationseintrag erstellen
-            return self.async_create_entry(title="Eiswarner Integration", data=user_input)
+        # Überprüfen der Gültigkeit des API-Schlüssels
+        if api_key is None:
+            # Der Benutzer hat keinen API-Schlüssel angegeben
+            return self.async_show_form(
+                step_id="user",
+                data={"errors": ["API-Schlüssel ist erforderlich"]},
+            )
 
-        # Zeigen Sie das Eingabeformular an
-        return self.async_show_form(
-            step_id="user",
-            data_schema=self.schema,
+        self._is_valid_api_key = self._is_valid_api_key(api_key)
+        if not self._is_valid_api_key:
+            # Der API-Schlüssel ist ungültig
+            return self.async_show_form(
+                step_id="user",
+                data={"errors": ["API-Schlüssel ist ungültig"]},
+            )
+
+        # Abrufen der Längengrad
+        longitude = user_input.get(CONF_LONGITUDE)
+        if longitude is None:
+            # Der Benutzer hat keine Längengrad angegeben
+            return self.async_show_form(
+                step_id="user",
+                data={"errors": ["Längengrad ist erforderlich"]},
+            )
+
+        # Abrufen der Breitengrad
+        latitude = user_input.get(CONF_LATITUDE)
+        if latitude is None:
+            # Der Benutzer hat keine Breitengrad angegeben
+            return self.async_show_form(
+                step_id="user",
+                data={"errors": ["Breitengrad ist erforderlich"]},
+            )
+
+        # Senden einer API-Anfrage an den Eiswarner-Dienst
+        url = "https://api.eiswarnung.de"
+        payload = {'key': api_key, 'longitude': longitude, 'latitude': latitude}
+        response = requests.get(url, params=payload)
+
+        # Überprüfen der Antwort
+        if response.status_code == 200:
+            # Der API-Schlüssel ist gültig und die Koordinaten sind gültig
+            return self.async_create_entry(
+                title="Eiswarner",
+                data={
+                    CONF_API_KEY: api_key,
+                    CONF_LONGITUDE: longitude,
+                    CONF_LATITUDE: latitude,
+                },
+            )
+        else:
+            # Der API-Schlüssel ist gültig, aber die Koordinaten sind ungültig
+            return self.async_show_form(
+                step_id="user",
+                data={"errors": ["Die Koordinaten sind ungültig"]},
+            )
+
+    async def async_step_import(self, import_config: dict):
+        """Schritt 2: Import einer vorhandenen Konfiguration."""
+
+        return self.async_create_entry(
+            title="Eiswarner",
+            data=import_config,
         )
 
-    @property
-    def schema(self):
-        # Hier Eingabeformulardaten definieren
-        return vol.Schema(
-            {
-                vol.Required("api_key"): str,
-                vol.Required("longitude"): float,
-                vol.Required("latitude"): float,
-            }
-        )
+    def _is_valid_api_key(self, api_key):
+        """Überprüft die Gültigkeit des API-Schlüssels."""
 
+        # Senden einer API-Anfrage an den Eiswarner-Dienst
+        url = "https://api.eiswarnung.de"
+        payload = {'key': api_key}
+        response = requests.get(url, params=payload)
 
-def is_valid_api_key(api_key):
-    # Fügen Sie hier die Logik zur Überprüfung der Gültigkeit des API-Schlüssels hinzu
-    # Zum Beispiel könnten Sie eine API-Anfrage durchführen, um die Gültigkeit zu überprüfen
-    # und True zurückgeben, wenn der Schlüssel gültig ist, andernfalls False
-    return True
+        # Überprüfen der Antwort
+        if response.status_code == 200:
+            return True
+        else:
+            return False
