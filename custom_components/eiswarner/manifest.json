@@ -10,7 +10,7 @@
   "documentation": "https://github.com/seebaer1976/hacs_eiswarner/blob/master/README.md",
   "integration_type": "entity",
   "iot_class": "local_polling",
-  "requirements": [],
+  "requirements": ["requests"],
   "issue_tracker": "https://github.com/seebaer1976/hacs_eiswarner/issues",
   "loggers": [
     "eiswarner"
