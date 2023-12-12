@@ -1,3 +1,4 @@
+"""Eiswarner"""
 import datetime
 
 import requests
@@ -82,13 +83,15 @@ class EiswarnerEntity(Entity):
 
     async def async_update(self):
         """Aktualisiert den Sensorwert."""
-
         # Sende eine API-Anfrage
         response = get(
             "https://api.eiswarnung.de",
             params={"key": self.hass.data["config"]["api_key"], "lat": self.latitude, "lng": self.longitude},
         )
-        response.raise_for_status()
+
+        # Überprüfe den Antwortstatus
+        if response.status_code != 200:
+            raise ValueError(f"Fehler beim Abrufen von Daten von der API: {response.status_code}")
 
         # Verarbeite die Antwort
         data = response.json()

@@ -1,7 +1,9 @@
+"""Eiswarner"""
+
 from eiswarner import EiswarnerSensor
 
 DOMAIN = "eiswarner"
 
 PLATFORMS = ["sensor"]
 
-REQUIREMENTS = ["requests"]
+REQUIRES = ["requests", "homeassistant"]

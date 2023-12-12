@@ -4,9 +4,7 @@
   "codeowners": [
     "seebaer1976"
   ],
-  "dependencies": [
-    123445678
-  ],
+  "dependencies": [],
   "documentation": "https://github.com/seebaer1976/hacs_eiswarner/blob/master/README.md",
   "integration_type": "entity",
   "iot_class": "local_polling",
@@ -17,5 +15,22 @@
     "eiswarner"
   ],
   "version": "0.0.2",
-  "config_flow": false
+  "config": [
+    {
+      "name": "api_key",
+      "type": "str",
+      "required": true
+    },
+    {
+      "name": "latitude",
+      "type": "float",
+      "required": true
+    },
+    {
+      "name": "longitude",
+      "type": "float",
+      "required": true
+    }
+  ],
+  "icon": "mdi:ice"
 }
