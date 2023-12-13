@@ -1,16 +1,40 @@
 """Eiswarner"""
+from __future__ import annotations
+
+import asyncio
 import datetime
 
 import requests
-from homeassistant.components import sensor
+from homeassistant.helpers.typing import ConfigType
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
+
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 
 from requests import get
 
+DOMAIN = "eiswarner"
 
-class EiswarnerSensor(sensor.Sensor):
+def setup_platform(
+    hass: HomeAssistant,
+    config: ConfigType,
+    add_entities: AddEntitiesCallback,
+    discovery_info: DiscoveryInfoType | None = None
+) -> None:
+    """Set up the sensor platform."""
+    add_entities([Eiswarner()])
+
+def setup():
+    # Importiere die API-Schlüssel und Koordinaten aus der configuration.yaml
+    config_file = config.configuration.yaml
+    config_data = config.load_yaml(config_file)
+    api_key = config_data['sensor']['eiswarner']['api_key']
+    latitude = config_data['sensor']['eiswarner']['latitude']
+    longitude = config_data['sensor']['eiswarner']['longitude']
+
+class Eiswarner(SensorEntity):
     """Eiswarner Sensor."""
 
     def __init__(self, config):
