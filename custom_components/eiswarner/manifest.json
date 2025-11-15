@@ -1,32 +1,11 @@
 {
   "domain": "eiswarner",
   "name": "Eiswarner",
-  "codeowners": ["seebaer1976"],
-  "dependencies": [],
-  "documentation": "https://github.com/seebaer1976/hacs_eiswarner/blob/master/README.md",
-  "integration_type": "entity",
-  "iot_class": "local_polling",
-  "platforms": "custom",
-  "requirements": ["requests, homeassistant"],
+  "version": "1.0.0",
+  "documentation": "https://github.com/seebaer1976/hacs_eiswarner",
   "issue_tracker": "https://github.com/seebaer1976/hacs_eiswarner/issues",
-  "loggers": ["eiswarner"],
-  "version": "0.0.2",
-  "config": [
-    {
-      "name": "api_key",
-      "type": "str",
-      "required": true
-    },
-    {
-      "name": "latitude",
-      "type": "float",
-      "required": true
-    },
-    {
-      "name": "longitude",
-      "type": "float",
-      "required": true
-    }
-  ],
-  "icon": "mdi:ice"
+  "codeowners": ["@seebaer1976"],
+  "config_flow": true,
+  "iot_class": "local_polling",
+  "requirements": ["asyncio"]
 }
