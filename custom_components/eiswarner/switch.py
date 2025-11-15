@@ -1,8 +1,8 @@
-"""Eiswarner Switch."""
+"""Eiswarner Switch (unverändert, aber triggert bei API-Warnung)."""
 import logging
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
@@ -39,11 +39,13 @@ class EiswarnerSwitch(SwitchEntity):
     async def async_turn_on(self, **kwargs) -> None:
         """Turn on the switch."""
         self._state = True
-        # Beispiel: Notification senden
+        coordinator = self._hass.data[DOMAIN][self._entry.entry_id]["coordinator"]
+        data = coordinator.data
+        message = f"Eiskratzen-Modus aktiviert! Risiko: {data.get('risk_level', 'Unbekannt')} ❄️"
         self._hass.services.async_call(
             "notify",
             "persistent_notification",
-            {"message": "Eiskratzen-Modus aktiviert! ❄️"},
+            {"message": message},
         )
         self.async_write_ha_state()
 
