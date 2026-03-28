@@ -1,7 +1,7 @@
 {
   "domain": "eiswarner",
   "name": "Eiswarner",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "documentation": "https://github.com/seebaer1976/hacs_eiswarner",
   "issue_tracker": "https://github.com/seebaer1976/hacs_eiswarner/issues",
   "codeowners": ["@seebaer1976"],
