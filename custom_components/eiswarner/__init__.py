@@ -1,92 +1,117 @@
-"""Eiswarner Integration mit API-Support."""
-import asyncio
+"""Eiswarner Integration – Eiswarnung für deine Windschutzscheibe."""
+from __future__ import annotations
+
 import logging
+from datetime import timedelta
+
+import aiohttp
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import device_registry
-from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE
+from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import DOMAIN
-
-PLATFORMS = ["sensor", "switch"]
+from .const import (
+    API_URL,
+    CONF_API_KEY,
+    CONF_LATITUDE,
+    CONF_LONGITUDE,
+    CONF_SCAN_INTERVAL,
+    CONF_USE_HA_GEO,
+    DEFAULT_SCAN_INTERVAL,
+    DOMAIN,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
-    """Set up Eiswarner from config entry."""
-    hass.data.setdefault(DOMAIN, {})
+PLATFORMS = ["sensor", "switch"]
+
+
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Set up Eiswarner from a config entry."""
     coordinator = EiswarnerCoordinator(hass, entry)
-    hass.data[DOMAIN][entry.entry_id] = {"coordinator": coordinator}
+
+    # Erster Datenabruf – wirft ConfigEntryNotReady wenn die API nicht erreichbar ist
+    await coordinator.async_config_entry_first_refresh()
+
+    hass.data.setdefault(DOMAIN, {})
+    hass.data[DOMAIN][entry.entry_id] = coordinator
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
-    """Unload Eiswarner config entry."""
-    coordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
-    await coordinator.async_stop()
+
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Unload a config entry."""
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id)
     return unload_ok
 
-class EiswarnerCoordinator:
-    """Coordinator for API data."""
 
-    def __init__(self, hass: HomeAssistant, entry: ConfigEntry):
-        self.hass = hass
+class EiswarnerCoordinator(DataUpdateCoordinator):
+    """Koordinator für die Eiswarnung-API.
+
+    Nutzt den echten DataUpdateCoordinator, damit CoordinatorEntity
+    automatisch über neue Daten informiert wird.
+    """
+
+    def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
+        scan_interval = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+        super().__init__(
+            hass,
+            _LOGGER,
+            name=DOMAIN,
+            update_interval=timedelta(seconds=scan_interval),
+        )
         self.entry = entry
-        self.data = {}
-        self._stop = None
+        self.session = async_get_clientsession(hass)
 
-    async def async_start(self):
-        """Start polling."""
-        self._stop = asyncio.create_task(self._async_update_loop())
+    def _get_coordinates(self) -> tuple[float, float]:
+        """Koordinaten aus Config oder HA-Einstellungen holen."""
+        if self.entry.data.get(CONF_USE_HA_GEO):
+            return self.hass.config.latitude, self.hass.config.longitude
+        return (
+            self.entry.data[CONF_LATITUDE],
+            self.entry.data[CONF_LONGITUDE],
+        )
 
-    async def _async_update_loop(self):
-        """Update data periodically."""
-        while True:
-            try:
-                data = await self._fetch_api_data()
-                self.data = data
-                await self.hass.async_add_executor_job(self._check_ice_warning, data)
-            except Exception as err:
-                _LOGGER.error(f"API-Fehler: {err}")
-            await asyncio.sleep(1800)  # 30 Min
+    async def _async_update_data(self) -> dict:
+        """Daten von der Eiswarnung-API abrufen.
 
-    async def _fetch_api_data(self):
-        """Fetch from Eiswarnung API."""
-        import aiohttp
+        Diese Methode wird von DataUpdateCoordinator aufgerufen.
+        Exceptions werden in UpdateFailed gewrappt.
+        """
+        api_key = self.entry.data[CONF_API_KEY]
+        lat, lng = self._get_coordinates()
 
-        config = self.entry.data
-        api_key = config.get(CONF_API_KEY)
-        if config.get(CONF_USE_HA_GEO):
-            lat = self.hass.config.latitude
-            lon = self.hass.config.longitude
-        else:
-            lat = config.get(CONF_LATITUDE)
-            lon = config.get(CONF_LONGITUDE)
-
-        if not all([api_key, lat, lon]):
-            raise ValueError("API-Key oder Koordinaten fehlen!")
-
-        url = f"{API_BASE}{API_ENDPOINT}?key={api_key}&lat={lat}&lon={lon}"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as resp:
+        try:
+            async with self.session.post(
+                API_URL,
+                data={"key": api_key, "lat": str(lat), "lng": str(lng)},
+                timeout=aiohttp.ClientTimeout(total=10),
+            ) as resp:
                 if resp.status != 200:
-                    raise ValueError(f"API-Fehler {resp.status}: {await resp.text()}")
-                return await resp.json()
+                    raise UpdateFailed(
+                        f"HTTP {resp.status} von der Eiswarnung-API"
+                    )
+                data = await resp.json(content_type=None)
+        except aiohttp.ClientError as err:
+            raise UpdateFailed(f"Verbindungsfehler zur Eiswarnung-API: {err}") from err
 
-    def _check_ice_warning(self, data):
-        """Berechne Warnung aus API-Daten."""
-        temp = data.get("temperature", 0)
-        humidity = data.get("humidity", 0)
-        frost = self.entry.options.get(CONF_FROST_THRESHOLD, DEFAULT_FROST_THRESHOLD)
-        hum_th = self.entry.options.get(CONF_HUMIDITY_THRESHOLD, DEFAULT_HUMIDITY_THRESHOLD)
-        risk = temp <= frost and humidity >= hum_th
-        data["is_ice_warning"] = risk
-        data["risk_level"] = "Hoch" if risk else "Niedrig"
+        if not data.get("success"):
+            code = data.get("code", "?")
+            msg = data.get("message", "Unbekannter Fehler")
+            raise UpdateFailed(f"API Fehler {code}: {msg}")
 
-    async def async_stop(self):
-        """Stop polling."""
-        if self._stop:
-            self._stop.cancel()
+        result = data.get("result", {})
+        return {
+            "forecast_id": result.get("forecastId"),
+            "forecast_text": result.get("forecastText"),
+            "forecast_city": result.get("forecastCity"),
+            "forecast_date": result.get("forecastDate"),
+            "request_date": result.get("requestDate"),
+            "calls_left": data.get("callsLeft"),
+            "calls_daily_limit": data.get("callsDailyLimit"),
+            "calls_reset_in_seconds": data.get("callsResetInSeconds"),
+        }
