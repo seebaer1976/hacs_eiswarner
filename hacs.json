@@ -1,6 +1,5 @@
 {
   "name": "Eiswarner",
   "homeassistant": "2025.1.0",
-  "render_readme": true,
-  "country": "DE"
+  "render_readme": true
 }
