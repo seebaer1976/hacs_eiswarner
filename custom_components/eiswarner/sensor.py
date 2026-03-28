@@ -1,10 +1,17 @@
-"""Eiswarner Sensor – zeigt Eiswahrscheinlichkeit."""
+"""Eiswarner Sensoren – alle API-Felder als eigene Entities."""
 from __future__ import annotations
 
 import logging
+from datetime import date
 
-from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorEntityDescription,
+    SensorStateClass,
+)
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -15,7 +22,6 @@ from .const import (
     FORECAST_ICE,
     FORECAST_ID_TO_TEXT,
     FORECAST_MAYBE_ICE,
-    FORECAST_NO_ICE,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -26,53 +32,199 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Sensor-Entity einrichten."""
+    """Alle Sensor-Entities einrichten."""
     coordinator: EiswarnerCoordinator = hass.data[DOMAIN][entry.entry_id]
-    async_add_entities([EiswarnerSensor(coordinator, entry)])
+    async_add_entities([
+        EiswarnerForecastSensor(coordinator, entry),
+        EiswarnerForecastIdSensor(coordinator, entry),
+        EiswarnerCitySensor(coordinator, entry),
+        EiswarnerForecastDateSensor(coordinator, entry),
+        EiswarnerRequestDateSensor(coordinator, entry),
+        EiswarnerCallsLeftSensor(coordinator, entry),
+        EiswarnerCallsLimitSensor(coordinator, entry),
+        EiswarnerCallsResetSensor(coordinator, entry),
+    ])
 
 
-class EiswarnerSensor(CoordinatorEntity, SensorEntity):
-    """Sensor-Entity für die Eiswarnung.
+class _EiswarnerBaseSensor(CoordinatorEntity, SensorEntity):
+    """Basis-Klasse für alle Eiswarner-Sensoren."""
 
-    Zustand = Vorhersagetext (z.B. "Kein Eis", "Eis", "Eventuell Eis").
-    Zusätzliche Attribute enthalten alle weiteren API-Felder.
-    """
+    _attr_has_entity_name = True
+
+    def __init__(
+        self,
+        coordinator: EiswarnerCoordinator,
+        entry: ConfigEntry,
+        unique_suffix: str,
+    ) -> None:
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{entry.entry_id}_{unique_suffix}"
+        self._attr_device_info = coordinator.device_info
+
+
+# ---------------------------------------------------------------------------
+# Steuerelemente / Hauptsensoren (keine EntityCategory = sichtbar im Standard)
+# ---------------------------------------------------------------------------
+
+class EiswarnerForecastSensor(_EiswarnerBaseSensor):
+    """Hauptsensor: Vorhersagetext (Kein Eis / Eis / Eventuell Eis)."""
 
     _attr_icon = "mdi:car-defrost-front"
-    _attr_has_entity_name = True
     _attr_name = "Eiswarnung"
 
-    def __init__(self, coordinator: EiswarnerCoordinator, entry: ConfigEntry) -> None:
-        super().__init__(coordinator)
-        # Unique ID pro Config-Entry (unterstützt mehrere Standorte)
-        self._attr_unique_id = f"{entry.entry_id}_sensor"
-        self._entry = entry
+    def __init__(self, coordinator, entry):
+        super().__init__(coordinator, entry, "forecast")
 
     @property
     def native_value(self) -> str | None:
-        """Zustand: Vorhersagetext aus der API."""
         if not self.coordinator.data:
             return None
         forecast_id = self.coordinator.data.get("forecast_id")
         if forecast_id is None:
             return None
-        return FORECAST_ID_TO_TEXT.get(forecast_id, self.coordinator.data.get("forecast_text"))
+        return FORECAST_ID_TO_TEXT.get(
+            forecast_id, self.coordinator.data.get("forecast_text")
+        )
 
     @property
     def extra_state_attributes(self) -> dict:
-        """Alle verfügbaren API-Felder als Attribute."""
         if not self.coordinator.data:
             return {}
         data = self.coordinator.data
         forecast_id = data.get("forecast_id")
         return {
-            "forecast_id": forecast_id,
             "is_ice_warning": forecast_id == FORECAST_ICE,
             "is_ice_possible": forecast_id in (FORECAST_ICE, FORECAST_MAYBE_ICE),
-            "forecast_text": data.get("forecast_text"),
-            "forecast_city": data.get("forecast_city"),
-            "forecast_date": data.get("forecast_date"),
-            "request_date": data.get("request_date"),
-            "calls_left": data.get("calls_left"),
-            "calls_daily_limit": data.get("calls_daily_limit"),
         }
+
+
+class EiswarnerForecastIdSensor(_EiswarnerBaseSensor):
+    """Vorhersage-ID: 0 = kein Eis, 1 = Eis, 2 = eventuell Eis."""
+
+    _attr_icon = "mdi:numeric"
+    _attr_name = "Vorhersage ID"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+
+    def __init__(self, coordinator, entry):
+        super().__init__(coordinator, entry, "forecast_id")
+
+    @property
+    def native_value(self) -> int | None:
+        if not self.coordinator.data:
+            return None
+        return self.coordinator.data.get("forecast_id")
+
+
+class EiswarnerCitySensor(_EiswarnerBaseSensor):
+    """Erkannter Ort zu den Koordinaten."""
+
+    _attr_icon = "mdi:city"
+    _attr_name = "Ort"
+
+    def __init__(self, coordinator, entry):
+        super().__init__(coordinator, entry, "city")
+
+    @property
+    def native_value(self) -> str | None:
+        if not self.coordinator.data:
+            return None
+        return self.coordinator.data.get("forecast_city")
+
+
+class EiswarnerForecastDateSensor(_EiswarnerBaseSensor):
+    """Datum für das die Vorhersage gilt."""
+
+    _attr_icon = "mdi:calendar-snowflake"
+    _attr_name = "Vorhersage Datum"
+    _attr_device_class = SensorDeviceClass.DATE
+
+    def __init__(self, coordinator, entry):
+        super().__init__(coordinator, entry, "forecast_date")
+
+    @property
+    def native_value(self) -> date | None:
+        if not self.coordinator.data:
+            return None
+        raw = self.coordinator.data.get("forecast_date")
+        if not raw:
+            return None
+        try:
+            return date.fromisoformat(raw)
+        except ValueError:
+            return None
+
+
+# ---------------------------------------------------------------------------
+# Diagnose-Sensoren (EntityCategory.DIAGNOSTIC)
+# ---------------------------------------------------------------------------
+
+class EiswarnerRequestDateSensor(_EiswarnerBaseSensor):
+    """Zeitpunkt des letzten API-Abrufs."""
+
+    _attr_icon = "mdi:clock-outline"
+    _attr_name = "Letzter Abruf"
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator, entry):
+        super().__init__(coordinator, entry, "request_date")
+
+    @property
+    def native_value(self) -> str | None:
+        if not self.coordinator.data:
+            return None
+        return self.coordinator.data.get("request_date")
+
+
+class EiswarnerCallsLeftSensor(_EiswarnerBaseSensor):
+    """Verbleibende API-Abfragen heute."""
+
+    _attr_icon = "mdi:counter"
+    _attr_name = "Abfragen verbleibend"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator, entry):
+        super().__init__(coordinator, entry, "calls_left")
+
+    @property
+    def native_value(self) -> int | None:
+        if not self.coordinator.data:
+            return None
+        return self.coordinator.data.get("calls_left")
+
+
+class EiswarnerCallsLimitSensor(_EiswarnerBaseSensor):
+    """Tägliches API-Limit."""
+
+    _attr_icon = "mdi:speedometer"
+    _attr_name = "Tägliches Limit"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator, entry):
+        super().__init__(coordinator, entry, "calls_limit")
+
+    @property
+    def native_value(self) -> int | None:
+        if not self.coordinator.data:
+            return None
+        return self.coordinator.data.get("calls_daily_limit")
+
+
+class EiswarnerCallsResetSensor(_EiswarnerBaseSensor):
+    """Sekunden bis zum Reset des API-Limits."""
+
+    _attr_icon = "mdi:timer-refresh-outline"
+    _attr_name = "Limit Reset in"
+    _attr_native_unit_of_measurement = "s"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator, entry):
+        super().__init__(coordinator, entry, "calls_reset")
+
+    @property
+    def native_value(self) -> int | None:
+        if not self.coordinator.data:
+            return None
+        return self.coordinator.data.get("calls_reset_in_seconds")

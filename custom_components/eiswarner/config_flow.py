@@ -106,14 +106,11 @@ class EiswarnerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_options_flow(config_entry):
         """Options Flow zurückgeben."""
-        return EiswarnerOptionsFlow(config_entry)
+        return EiswarnerOptionsFlow()
 
 
 class EiswarnerOptionsFlow(config_entries.OptionsFlow):
     """Options Flow: Scan-Intervall anpassen."""
-
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        self.config_entry = config_entry
 
     async def async_step_init(self, user_input: dict | None = None):
         """Einziger Options-Schritt."""

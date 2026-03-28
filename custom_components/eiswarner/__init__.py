@@ -7,8 +7,8 @@ from datetime import timedelta
 import aiohttp
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import (
@@ -24,7 +24,7 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = ["sensor", "switch"]
+PLATFORMS = ["binary_sensor", "sensor", "switch"]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -50,11 +50,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 class EiswarnerCoordinator(DataUpdateCoordinator):
-    """Koordinator für die Eiswarnung-API.
-
-    Nutzt den echten DataUpdateCoordinator, damit CoordinatorEntity
-    automatisch über neue Daten informiert wird.
-    """
+    """Koordinator für die Eiswarnung-API."""
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         scan_interval = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
@@ -67,6 +63,19 @@ class EiswarnerCoordinator(DataUpdateCoordinator):
         self.entry = entry
         self.session = async_get_clientsession(hass)
 
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Geräteinformationen – erzeugt die Device-Seite in HA."""
+        lat, lng = self._get_coordinates()
+        return DeviceInfo(
+            identifiers={(DOMAIN, self.entry.entry_id)},
+            name=f"Eiswarnung ({lat:.4f}, {lng:.4f})",
+            manufacturer="eiswarnung.de",
+            model="REST API v1",
+            entry_type="service",
+            configuration_url="https://www.eiswarnung.de/rest-api/",
+        )
+
     def _get_coordinates(self) -> tuple[float, float]:
         """Koordinaten aus Config oder HA-Einstellungen holen."""
         if self.entry.data.get(CONF_USE_HA_GEO):
@@ -77,11 +86,7 @@ class EiswarnerCoordinator(DataUpdateCoordinator):
         )
 
     async def _async_update_data(self) -> dict:
-        """Daten von der Eiswarnung-API abrufen.
-
-        Diese Methode wird von DataUpdateCoordinator aufgerufen.
-        Exceptions werden in UpdateFailed gewrappt.
-        """
+        """Daten von der Eiswarnung-API abrufen."""
         api_key = self.entry.data[CONF_API_KEY]
         lat, lng = self._get_coordinates()
 
@@ -92,9 +97,7 @@ class EiswarnerCoordinator(DataUpdateCoordinator):
                 timeout=aiohttp.ClientTimeout(total=10),
             ) as resp:
                 if resp.status != 200:
-                    raise UpdateFailed(
-                        f"HTTP {resp.status} von der Eiswarnung-API"
-                    )
+                    raise UpdateFailed(f"HTTP {resp.status} von der Eiswarnung-API")
                 data = await resp.json(content_type=None)
         except aiohttp.ClientError as err:
             raise UpdateFailed(f"Verbindungsfehler zur Eiswarnung-API: {err}") from err
