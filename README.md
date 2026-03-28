@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="custom_components/hacs_eiswarner/brand/icon.png" alt="Eiswarner Logo" width="200"/>
+<img src="custom_components/eiswarner/brand/icon.png" alt="Eiswarner Logo" width="200"/>
 
 # Eiswarner ❄️
 
