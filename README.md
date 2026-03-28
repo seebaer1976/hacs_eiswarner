@@ -190,17 +190,6 @@ hacs_eiswarner/
 
 ---
 
-## Changelog
-
-### v2.0.0
-- Komplette Neuentwicklung mit echtem `DataUpdateCoordinator`
-- Korrekte Anbindung der eiswarnung.de API (POST, echte Felder)
-- Device-Seite mit Sensor + Switch
-- Config Flow + Options Flow
-- HACS-kompatibel mit Brand-Icon
-
----
-
 ## Credits
 
 Erstellt von [@seebaer1976](https://github.com/seebaer1976)  
