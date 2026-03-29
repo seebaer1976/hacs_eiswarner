@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import date
+from datetime import date, datetime
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -163,24 +163,24 @@ class EiswarnerCitySensor(_EiswarnerBaseSensor):
 class EiswarnerForecastDateSensor(_EiswarnerBaseSensor):
     """Datum für das die Vorhersage gilt."""
 
-    _attr_icon = "mdi:calendar-snowflake"
+    _attr_icon = "mdi:calendar-month"
     _attr_name = "Vorhersage Datum"
-    _attr_device_class = SensorDeviceClass.DATE
 
     def __init__(self, coordinator, entry):
         super().__init__(coordinator, entry, "forecast_date")
 
     @property
-    def native_value(self) -> date | None:
+    def native_value(self) -> str | None:
         if not self.coordinator.data:
             return None
         raw = self.coordinator.data.get("forecast_date")
         if not raw:
             return None
         try:
-            return date.fromisoformat(raw)
+            d = date.fromisoformat(raw)
+            return d.strftime("%d.%m.%Y")
         except ValueError:
-            return None
+            return raw
 
 
 # ---------------------------------------------------------------------------
@@ -201,7 +201,15 @@ class EiswarnerRequestDateSensor(_EiswarnerBaseSensor):
     def native_value(self) -> str | None:
         if not self.coordinator.data:
             return None
-        return self.coordinator.data.get("request_date")
+        raw = self.coordinator.data.get("request_date")
+        if not raw:
+            return None
+        try:
+            # API liefert "2026-03-28 13:53:52" → "28.03.2026 13:53:52"
+            dt = datetime.strptime(raw, "%Y-%m-%d %H:%M:%S")
+            return dt.strftime("%d.%m.%Y %H:%M:%S")
+        except ValueError:
+            return raw
 
 
 class EiswarnerCallsLeftSensor(_EiswarnerBaseSensor):
