@@ -133,6 +133,7 @@ class EiswarnerForecastIdSensor(_EiswarnerBaseSensor):
     _attr_icon = "mdi:numeric"
     _attr_name = "Vorhersage ID"
     _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_entity_registry_enabled_default = False
 
     def __init__(self, coordinator, entry):
         super().__init__(coordinator, entry, "forecast_id")
@@ -149,6 +150,7 @@ class EiswarnerCitySensor(_EiswarnerBaseSensor):
 
     _attr_icon = "mdi:city"
     _attr_name = "Ort"
+    _attr_entity_registry_enabled_default = False
 
     def __init__(self, coordinator, entry):
         super().__init__(coordinator, entry, "city")
@@ -237,6 +239,7 @@ class EiswarnerCallsLimitSensor(_EiswarnerBaseSensor):
     _attr_name = "Tägliches Limit"
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_entity_registry_enabled_default = False
 
     def __init__(self, coordinator, entry):
         super().__init__(coordinator, entry, "calls_limit")
@@ -256,6 +259,7 @@ class EiswarnerCallsResetSensor(_EiswarnerBaseSensor):
     _attr_native_unit_of_measurement = "s"
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_entity_registry_enabled_default = False
 
     def __init__(self, coordinator, entry):
         super().__init__(coordinator, entry, "calls_reset")

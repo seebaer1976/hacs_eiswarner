@@ -168,6 +168,10 @@ Die Integration nutzt die [eiswarnung.de REST API](https://www.eiswarnung.de/res
 
 ## Changelog
 
+### v2.0.5
+- Sensoren "Vorhersage ID" und "Ort" sind standardmäßig deaktiviert (können bei Bedarf in HA aktiviert werden)
+- Diagnose-Sensoren "Tägliches Limit" und "Limit Reset in" sind standardmäßig deaktiviert (können bei Bedarf in HA aktiviert werden)
+
 ### v2.0.4
 - Fix: `DeviceEntryType.SERVICE` jetzt korrekt als Enum-Wert (statt String) – behebt Darstellungsfehler auf der Device-Seite in HA 2026.x
 
