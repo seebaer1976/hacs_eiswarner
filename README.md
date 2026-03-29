@@ -8,7 +8,6 @@
 
 [![GitHub Release](https://img.shields.io/github/release/seebaer1976/hacs_eiswarner.svg?style=for-the-badge&color=0078d4)](https://github.com/seebaer1976/hacs_eiswarner/releases)
 [![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration)
-[![License](https://img.shields.io/github/license/seebaer1976/hacs_eiswarner?style=for-the-badge)](LICENSE)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2025.1%2B-blue?style=for-the-badge&logo=home-assistant)](https://www.home-assistant.io)
 
 </div>
