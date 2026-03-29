@@ -5,8 +5,8 @@
     "@seebaer1976"
   ],
   "config_flow": true,
-  "documentation": "https://github.com/seebaer1976/hacs_eiswarner",
+  "documentation": "https://github.com/seebaer1976/ha-eiswarner",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/seebaer1976/hacs_eiswarner/issues",
+  "issue_tracker": "https://github.com/seebaer1976/ha-eiswarner/issues",
   "version": "2.0.5"
 }

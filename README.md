@@ -6,8 +6,8 @@
 
 **Smartes Eiskratzen dank Eiswarnung für Home Assistant**
 
-[![GitHub Release](https://img.shields.io/github/release/seebaer1976/hacs_eiswarner.svg?style=for-the-badge&color=0078d4)](https://github.com/seebaer1976/hacs_eiswarner/releases)
-[![GitHub Issues](https://img.shields.io/github/issues/seebaer1976/hacs_eiswarner.svg?style=for-the-badge&color=orange)](https://github.com/seebaer1976/hacs_eiswarner/issues)
+[![GitHub Release](https://img.shields.io/github/release/seebaer1976/ha-eiswarner.svg?style=for-the-badge&color=0078d4)](https://github.com/seebaer1976/ha-eiswarner/releases)
+[![GitHub Issues](https://img.shields.io/github/issues/seebaer1976/ha-eiswarner.svg?style=for-the-badge&color=orange)](https://github.com/seebaer1976/ha-eiswarner/issues)
 [![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2025.1%2B-blue?style=for-the-badge&logo=home-assistant)](https://www.home-assistant.io)
 
@@ -50,12 +50,12 @@ Die Integration nutzt die [eiswarnung.de REST API](https://www.eiswarnung.de/res
 
 Klicke auf den Button oder folge der manuellen Anleitung darunter:
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=seebaer1976&repository=hacs_eiswarner&category=integration)
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=seebaer1976&repository=ha-eiswarner&category=integration)
 
 **Oder manuell:**
 1. HACS öffnen
 2. Oben rechts auf die **drei Punkte** klicken → **„Benutzerdefinierte Repositories"**
-3. URL eingeben: `https://github.com/seebaer1976/hacs_eiswarner`
+3. URL eingeben: `https://github.com/seebaer1976/ha-eiswarner`
 4. Kategorie: **Integration** wählen
 5. **„Hinzufügen"** klicken
 
@@ -80,7 +80,7 @@ Klicke auf den Button oder gehe manuell zu Einstellungen → Geräte & Dienste:
 
 ### Option 2: Manuelle Installation
 
-1. Lade die [neueste Version](https://github.com/seebaer1976/hacs_eiswarner/releases/latest) herunter
+1. Lade die [neueste Version](https://github.com/seebaer1976/ha-eiswarner/releases/latest) herunter
 2. Entpacke das Archiv
 3. Kopiere den Ordner `custom_components/eiswarner/` in dein HA-Konfigurationsverzeichnis:
    ```
