@@ -1,11 +1,15 @@
 {
   "domain": "eiswarner",
   "name": "Eiswarner",
-  "version": "2.0.4",
-  "documentation": "https://github.com/seebaer1976/hacs_eiswarner",
-  "issue_tracker": "https://github.com/seebaer1976/hacs_eiswarner/issues",
-  "codeowners": ["@seebaer1976"],
+  "codeowners": [
+    "@seebaer1976"
+  ],
   "config_flow": true,
+  "documentation": "https://github.com/seebaer1976/hacs_eiswarner",
   "iot_class": "cloud_polling",
-  "requirements": ["aiohttp>=3.8.0"]
+  "issue_tracker": "https://github.com/seebaer1976/hacs_eiswarner/issues",
+  "requirements": [
+    "aiohttp>=3.8.0"
+  ],
+  "version": "2.0.4"
 }
