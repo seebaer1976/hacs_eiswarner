@@ -168,6 +168,14 @@ Die Integration nutzt die [eiswarnung.de REST API](https://www.eiswarnung.de/res
 
 ## Changelog
 
+### v2.0.4
+- Fix: `DeviceEntryType.SERVICE` jetzt korrekt als Enum-Wert (statt String) – behebt Darstellungsfehler auf der Device-Seite in HA 2026.x
+
+### v2.0.3
+- Diagnose-Sensoren für alle API-Felder hinzugefügt (API Code, API Nachricht, API Status, Abfragen verbleibend, Tägliches Limit, Limit Reset, Letzter Abruf)
+- Übersetzte API-Status-Meldungen (DE/EN)
+- `OptionsFlow` angepasst für HA 2026.x Kompatibilität (`config_entry` nicht mehr als `__init__`-Parameter)
+
 ### v2.0.0
 - Komplette Neuentwicklung mit echtem `DataUpdateCoordinator`
 - Korrekte Anbindung der eiswarnung.de API (POST, echte Felder)

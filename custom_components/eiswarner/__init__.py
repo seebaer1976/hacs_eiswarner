@@ -8,7 +8,7 @@ import aiohttp
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import (
@@ -72,7 +72,7 @@ class EiswarnerCoordinator(DataUpdateCoordinator):
             name=f"Eiswarnung ({lat:.4f}, {lng:.4f})",
             manufacturer="eiswarnung.de",
             model="REST API v1",
-            entry_type="service",
+            entry_type=DeviceEntryType.SERVICE,
             configuration_url="https://www.eiswarnung.de/rest-api/",
         )
 
