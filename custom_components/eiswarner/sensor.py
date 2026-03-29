@@ -7,7 +7,6 @@ from datetime import date
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
-    SensorEntityDescription,
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
@@ -26,6 +25,33 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
+# API-Code → Deutsche Bedeutung
+API_CODE_MEANINGS_DE = {
+    200: "Aufruf erfolgreich",
+    300: "Geokoordinaten fehlen",
+    400: "API Key fehlt",
+    401: "API Key ungültig",
+    402: "Tägliches Call-Limit erreicht",
+}
+
+# API-Code → Englische Bedeutung
+API_CODE_MEANINGS_EN = {
+    200: "Request successful",
+    300: "Geo coordinates missing",
+    400: "API key missing",
+    401: "API key invalid",
+    402: "Daily call limit reached",
+}
+
+# API message → Deutsche Übersetzung
+API_MESSAGE_TRANSLATIONS = {
+    "Request successful!": "Anfrage erfolgreich!",
+    "API key is missing!": "API Key fehlt!",
+    "API key is invalid!": "API Key ungültig!",
+    "Daily call limit reached!": "Tägliches Limit erreicht!",
+    "Geo coordinates are missing!": "Geokoordinaten fehlen!",
+}
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -43,6 +69,9 @@ async def async_setup_entry(
         EiswarnerCallsLeftSensor(coordinator, entry),
         EiswarnerCallsLimitSensor(coordinator, entry),
         EiswarnerCallsResetSensor(coordinator, entry),
+        EiswarnerApiSuccessSensor(coordinator, entry),
+        EiswarnerApiMessageSensor(coordinator, entry),
+        EiswarnerApiCodeSensor(coordinator, entry),
     ])
 
 
@@ -63,11 +92,11 @@ class _EiswarnerBaseSensor(CoordinatorEntity, SensorEntity):
 
 
 # ---------------------------------------------------------------------------
-# Steuerelemente / Hauptsensoren (keine EntityCategory = sichtbar im Standard)
+# Hauptsensoren
 # ---------------------------------------------------------------------------
 
 class EiswarnerForecastSensor(_EiswarnerBaseSensor):
-    """Hauptsensor: Vorhersagetext (Kein Eis / Eis / Eventuell Eis)."""
+    """Hauptsensor: Vorhersagetext."""
 
     _attr_icon = "mdi:car-defrost-front"
     _attr_name = "Eiswarnung"
@@ -155,7 +184,7 @@ class EiswarnerForecastDateSensor(_EiswarnerBaseSensor):
 
 
 # ---------------------------------------------------------------------------
-# Diagnose-Sensoren (EntityCategory.DIAGNOSTIC)
+# Diagnose-Sensoren
 # ---------------------------------------------------------------------------
 
 class EiswarnerRequestDateSensor(_EiswarnerBaseSensor):
@@ -228,3 +257,67 @@ class EiswarnerCallsResetSensor(_EiswarnerBaseSensor):
         if not self.coordinator.data:
             return None
         return self.coordinator.data.get("calls_reset_in_seconds")
+
+
+class EiswarnerApiSuccessSensor(_EiswarnerBaseSensor):
+    """API-Status: Anfrage erfolgreich oder nicht."""
+
+    _attr_icon = "mdi:check-network-outline"
+    _attr_name = "API Status"
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator, entry):
+        super().__init__(coordinator, entry, "api_success")
+
+    @property
+    def native_value(self) -> str | None:
+        if not self.coordinator.data:
+            return None
+        return "OK" if self.coordinator.data.get("api_success") else "Fehler"
+
+
+class EiswarnerApiMessageSensor(_EiswarnerBaseSensor):
+    """API-Nachricht – übersetzt auf Deutsch."""
+
+    _attr_icon = "mdi:message-text-outline"
+    _attr_name = "API Nachricht"
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator, entry):
+        super().__init__(coordinator, entry, "api_message")
+
+    @property
+    def native_value(self) -> str | None:
+        if not self.coordinator.data:
+            return None
+        raw = self.coordinator.data.get("api_message", "")
+        # Übersetzung DE, fallback auf Original (EN)
+        return API_MESSAGE_TRANSLATIONS.get(raw, raw)
+
+
+class EiswarnerApiCodeSensor(_EiswarnerBaseSensor):
+    """API-Antwortcode mit Bedeutung als Attribut."""
+
+    _attr_icon = "mdi:identifier"
+    _attr_name = "API Code"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator, entry):
+        super().__init__(coordinator, entry, "api_code")
+
+    @property
+    def native_value(self) -> int | None:
+        if not self.coordinator.data:
+            return None
+        return self.coordinator.data.get("api_code")
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        if not self.coordinator.data:
+            return {}
+        code = self.coordinator.data.get("api_code")
+        return {
+            "bedeutung": API_CODE_MEANINGS_DE.get(code, "Unbekannt"),
+            "meaning": API_CODE_MEANINGS_EN.get(code, "Unknown"),
+        }

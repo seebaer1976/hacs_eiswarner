@@ -24,7 +24,7 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = ["binary_sensor", "sensor", "switch"]
+PLATFORMS = ["sensor", "switch"]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -117,4 +117,7 @@ class EiswarnerCoordinator(DataUpdateCoordinator):
             "calls_left": data.get("callsLeft"),
             "calls_daily_limit": data.get("callsDailyLimit"),
             "calls_reset_in_seconds": data.get("callsResetInSeconds"),
+            "api_success": data.get("success"),
+            "api_message": data.get("message"),
+            "api_code": data.get("code"),
         }
