@@ -96,9 +96,9 @@ Klicke auf den Button oder gehe manuell zu Einstellungen → Geräte & Dienste:
 
 | Feld | Beschreibung |
 |------|-------------|
-| **API-Key** | Dein kostenloser Key von [eiswarnung.de/get-api](https://www.eiswarnung.de/get-api/) |
-| **HA-Standort verwenden** | Nutzt automatisch die in HA konfigurierten Koordinaten |
-| **Breitengrad / Längengrad** | Manuelle Koordinaten (nur wenn HA-Standort deaktiviert) |
+| `**API-Key** `| Dein kostenloser Key von [eiswarnung.de/get-api](https://www.eiswarnung.de/get-api/) |
+| `**HA-Standort verwenden**` | Nutzt automatisch die in HA konfigurierten Koordinaten |
+| `**Breitengrad / Längengrad** `| Manuelle Koordinaten (nur wenn HA-Standort deaktiviert) |
 
 ### Optionen (nach der Einrichtung)
 
@@ -106,7 +106,7 @@ Klicke auf den Button oder gehe manuell zu Einstellungen → Geräte & Dienste:
 
 | Option | Standard | Beschreibung |
 |--------|---------|-------------|
-| **Aktualisierungsintervall** | 1800 s | Abfrageintervall in Sekunden (min. 300, max. 86400) |
+| `**Aktualisierungsintervall**` | 1800 s | Abfrageintervall in Sekunden (min. 300, max. 86400) |
 
 > 💡 **Tipp:** Laut eiswarnung.de sind Abfragen **8–10 Stunden vor dem Morgen** am genauesten. Eine Automation um 22:00 Uhr ist ideal.
 
@@ -162,30 +162,6 @@ Die Integration nutzt die [eiswarnung.de REST API](https://www.eiswarnung.de/res
 - **Kostenlos:** bis zu **50 Abfragen/Tag**
 - **Methode:** POST an `https://api.eiswarnung.de/`
 - **API-Key:** kostenlos registrieren unter [eiswarnung.de/get-api](https://www.eiswarnung.de/get-api/)
-
----
-
-## Repo-Struktur
-
-```
-hacs_eiswarner/
-├── custom_components/
-│   └── eiswarner/
-│       ├── brand/
-│       │   └── icon.png
-│       ├── translations/
-│       │   ├── de.json
-│       │   └── en.json
-│       ├── __init__.py
-│       ├── config_flow.py
-│       ├── const.py
-│       ├── manifest.json
-│       ├── sensor.py
-│       ├── strings.json
-│       └── switch.py
-├── hacs.json
-└── README.md
-```
 
 ---
 
