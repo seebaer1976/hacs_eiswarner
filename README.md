@@ -168,6 +168,12 @@ Die Integration nutzt die [eiswarnung.de REST API](https://www.eiswarnung.de/res
 
 ## Changelog
 
+### v2.0.6
+- Fix: Bei aufgebrauchtem API-Tageslimit (Code 402) bleibt die letzte bekannte Vorhersage erhalten – die Integration fällt nicht mehr aus
+- Der Diagnose-Sensor "API Nachricht" zeigt in diesem Fall "Tägliches Limit erreicht!" an
+- Der Diagnose-Sensor "Abfragen verbleibend" zeigt 0 an
+- Der Diagnose-Sensor "Limit Reset in" zeigt die verbleibende Wartezeit bis zum Reset an
+
 ### v2.0.5
 - Sensoren "Vorhersage ID" und "Ort" sind standardmäßig deaktiviert (können bei Bedarf in HA aktiviert werden)
 - Diagnose-Sensoren "Tägliches Limit" und "Limit Reset in" sind standardmäßig deaktiviert (können bei Bedarf in HA aktiviert werden)

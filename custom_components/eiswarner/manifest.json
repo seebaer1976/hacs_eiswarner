@@ -8,5 +8,5 @@
   "documentation": "https://github.com/seebaer1976/ha-eiswarner",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/seebaer1976/ha-eiswarner/issues",
-  "version": "2.0.5"
+  "version": "2.0.6"
 }

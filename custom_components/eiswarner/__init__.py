@@ -102,8 +102,27 @@ class EiswarnerCoordinator(DataUpdateCoordinator):
         except aiohttp.ClientError as err:
             raise UpdateFailed(f"Verbindungsfehler zur Eiswarnung-API: {err}") from err
 
-        if not data.get("success"):
-            code = data.get("code", "?")
+        code = data.get("code")
+        success = data.get("success", False)
+
+        # Bei Limit-Fehler (402): letzte bekannte Vorhersage behalten,
+        # nur API-Statusinformationen aktualisieren.
+        if code == 402:
+            _LOGGER.warning(
+                "Eiswarnung API: Tägliches Limit erreicht – letzte Vorhersage wird beibehalten."
+            )
+            previous = self.data or {}
+            return {
+                **previous,
+                "calls_left": data.get("callsLeft", 0),
+                "calls_daily_limit": data.get("callsDailyLimit", previous.get("calls_daily_limit")),
+                "calls_reset_in_seconds": data.get("callsResetInSeconds", previous.get("calls_reset_in_seconds")),
+                "api_success": False,
+                "api_message": data.get("message", "Daily call limit reached!"),
+                "api_code": code,
+            }
+
+        if not success:
             msg = data.get("message", "Unbekannter Fehler")
             raise UpdateFailed(f"API Fehler {code}: {msg}")
 
@@ -117,7 +136,7 @@ class EiswarnerCoordinator(DataUpdateCoordinator):
             "calls_left": data.get("callsLeft"),
             "calls_daily_limit": data.get("callsDailyLimit"),
             "calls_reset_in_seconds": data.get("callsResetInSeconds"),
-            "api_success": data.get("success"),
+            "api_success": success,
             "api_message": data.get("message"),
-            "api_code": data.get("code"),
+            "api_code": code,
         }
